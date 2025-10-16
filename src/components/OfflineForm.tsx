@@ -15,8 +15,8 @@ export const OfflineForm: React.FC<OfflineFormProps> = ({ onActivityAdded }) => 
   const [formData, setFormData] = useState({
     name: '',
     description: '',
-    date: '',
-    time: 0.5,
+    date: new Date().toISOString().split('T')[0], // Fecha actual por defecto
+    time: 1.0,
   });
   const [submitting, setSubmitting] = useState(false);
   const isOnline = useConnectionStatus();
@@ -28,7 +28,12 @@ export const OfflineForm: React.FC<OfflineFormProps> = ({ onActivityAdded }) => 
     try {
       const success = await onActivityAdded(formData);
       if (success) {
-        setFormData({ name: '', description: '', date: '', time: 0.5 });
+        setFormData({ 
+          name: '', 
+          description: '', 
+          date: new Date().toISOString().split('T')[0], 
+          time: 1.0 
+        });
         alert(`Actividad guardada ${isOnline ? 'y sincronizada' : 'en modo offline'}`);
       } else {
         alert('Error guardando la actividad');
@@ -52,67 +57,68 @@ export const OfflineForm: React.FC<OfflineFormProps> = ({ onActivityAdded }) => 
   };
 
   return (
-    <div className="form-section">
-      <h2>Nueva Actividad</h2>
+    <form onSubmit={handleSubmit} className="activity-form">
       {!isOnline && (
         <div className="offline-message">
           ⚠️ Modo offline - Las actividades se guardarán localmente
         </div>
       )}
-      <form onSubmit={handleSubmit} className="activity-form">
-        <div className="form-group">
-          <label htmlFor="name">Nombre de la actividad:</label>
-          <input
-            type="text"
-            id="name"
-            name="name"
-            value={formData.name}
-            onChange={handleChange}
-            required
-          />
-        </div>
+      
+      <div className="form-group">
+        <label htmlFor="name">Nombre de la actividad:</label>
+        <input
+          type="text"
+          id="name"
+          name="name"
+          value={formData.name}
+          onChange={handleChange}
+          placeholder="Ej: Estudio de React, Tarea de Matemáticas"
+          required
+        />
+      </div>
 
-        <div className="form-group">
-          <label htmlFor="description">Descripción:</label>
-          <textarea
-            id="description"
-            name="description"
-            value={formData.description}
-            onChange={handleChange}
-            required
-          />
-        </div>
+      <div className="form-group">
+        <label htmlFor="description">Descripción:</label>
+        <textarea
+          id="description"
+          name="description"
+          value={formData.description}
+          onChange={handleChange}
+          placeholder="Describe la actividad realizada..."
+          required
+        />
+      </div>
 
-        <div className="form-group">
-          <label htmlFor="date">Fecha:</label>
-          <input
-            type="date"
-            id="date"
-            name="date"
-            value={formData.date}
-            onChange={handleChange}
-            required
-          />
-        </div>
+      <div className="form-group">
+        <label htmlFor="date">Fecha:</label>
+        <input
+          type="date"
+          id="date"
+          name="date"
+          value={formData.date}
+          onChange={handleChange}
+          required
+        />
+      </div>
 
-        <div className="form-group">
-          <label htmlFor="time">Tiempo dedicado (horas):</label>
-          <input
-            type="number"
-            id="time"
-            name="time"
-            min="0.5"
-            step="0.5"
-            value={formData.time}
-            onChange={handleChange}
-            required
-          />
-        </div>
+      <div className="form-group">
+        <label htmlFor="time">Tiempo dedicado (horas):</label>
+        <input
+          type="number"
+          id="time"
+          name="time"
+          min="0.5"
+          max="24"
+          step="0.5"
+          value={formData.time}
+          onChange={handleChange}
+          required
+        />
+      </div>
 
-        <button type="submit" disabled={submitting}>
-          {submitting ? 'Guardando...' : 'Guardar Actividad'}
-        </button>
-      </form>
-    </div>
+      <button type="submit" disabled={submitting}>
+        {submitting ? 'Guardando...' : 'Guardar Actividad'}
+      </button>
+    </form>
   );
 };

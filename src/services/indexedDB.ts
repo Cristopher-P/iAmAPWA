@@ -4,7 +4,7 @@ const DB_NAME = 'ActivitiesDB';
 const DB_VERSION = 1;
 const STORE_NAME = 'activities';
 
-export class ActivityDBNative {
+export class ActivityDB {
   private db: IDBDatabase | null = null;
 
   async init(): Promise<void> {
@@ -70,11 +70,16 @@ export class ActivityDBNative {
     return new Promise((resolve, reject) => {
       const transaction = this.db!.transaction([STORE_NAME], 'readonly');
       const store = transaction.objectStore(STORE_NAME);
-      const index = store.index('by-synced');
-      const request = index.getAll(IDBKeyRange.only(false));
-
+      
+      // Filtrar manualmente en lugar de usar el índice (evita el error con booleanos)
+      const request = store.getAll();
+      
       request.onerror = () => reject(request.error);
-      request.onsuccess = () => resolve(request.result);
+      request.onsuccess = () => {
+        const allActivities = request.result;
+        const pendingActivities = allActivities.filter(activity => !activity.synced);
+        resolve(pendingActivities);
+      };
     });
   }
 
@@ -113,6 +118,19 @@ export class ActivityDBNative {
       request.onsuccess = () => resolve();
     });
   }
+
+  async clearAllActivities(): Promise<void> {
+    if (!this.db) await this.init();
+
+    return new Promise((resolve, reject) => {
+      const transaction = this.db!.transaction([STORE_NAME], 'readwrite');
+      const store = transaction.objectStore(STORE_NAME);
+      const request = store.clear();
+
+      request.onerror = () => reject(request.error);
+      request.onsuccess = () => resolve();
+    });
+  }
 }
 
-export const activityDB = new ActivityDBNative();
+export const activityDB = new ActivityDB();

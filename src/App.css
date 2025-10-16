@@ -145,6 +145,14 @@ body {
   display: flex;
   flex-direction: column;
 }
+.syncing-indicator {
+  background: #3498db;
+  color: white;
+  padding: 0.4rem 0.8rem;
+  border-radius: 15px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
 
 /* Estados de conexión */
 .connection-status {
